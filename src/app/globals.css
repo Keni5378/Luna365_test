@@ -4,6 +4,8 @@
   --color-gold-500: #D4AF37;
   --color-gold-400: #F3E5AB; /* champagne gold */
   --color-gold-600: #AA8C2C;
+  --font-geist: "Geist", sans-serif;
+  --font-inter: "Inter", sans-serif;
 }
 
 :root {
@@ -98,24 +100,188 @@ body {
   .champagne-btn { padding: 0.75rem 1.5rem !important; font-size: 0.75rem !important; }
 }
 
-/* Forced Background Overrides */
-#location-page { 
-  background: radial-gradient(circle at 20% 30%, rgba(0, 71, 171, 0.4) 0%, transparent 60%),
-              radial-gradient(circle at 80% 70%, rgba(0, 31, 63, 0.5) 0%, #000000 100%) !important;
-  background-attachment: fixed !important; 
-  background-size: cover !important; 
-  background-position: center !important; 
+/* Page containers — transparent to let GSAP galaxy parallax show through */
+#location-page,
+#reserve-page,
+#gallery-page,
+#buzz-page,
+#about-page,
+#menu-page,
+#bar-page {
+  background: transparent !important;
 }
-#reserve-page { background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/backgrounds/reserve.png') !important; background-attachment: fixed; background-size: cover; background-position: center; }
-#gallery-page { background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/backgrounds/gallery.png') !important; background-attachment: fixed; background-size: cover; background-position: center; }
-#buzz-page { background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/backgrounds/buzz.png') !important; background-attachment: fixed; background-size: cover; background-position: center; }
-#about-page { background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/backgrounds/about.png') !important; background-attachment: fixed; background-size: cover; background-position: center; }
-#menu-page { background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/backgrounds/menu.png') !important; background-attachment: fixed; background-size: cover; background-position: center; }
-#bar-page { background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/backgrounds/bar.png') !important; background-attachment: fixed; background-size: cover; background-position: center; }
 
-.galaxy-bar {
-  background: radial-gradient(circle at 20% 30%, rgba(0, 105, 148, 0.4) 0%, transparent 60%),
-              radial-gradient(circle at 80% 70%, rgba(220, 20, 60, 0.35) 0%, #000000 80%) !important;
+.gold-halo-glow {
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.3), 0 0 40px rgba(212, 175, 55, 0.1);
+}
+
+.glass-card-premium {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.glass-card-premium:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(212, 175, 55, 0.6);
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.2);
+}
+
+/* High-End Glassmorphism v2026 */
+.glass-liquid {
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border-radius: 1.5rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.glass-liquid::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+}
+
+.glass-lift {
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.glass-lift:hover {
+  transform: translateY(-8px) scale(1.05);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.5);
+}
+
+.scrim-overlay {
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.4));
+}
+
+.text-glass-description {
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-inter);
+}
+
+.text-glass-title {
+  font-family: var(--font-geist);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Premium Liquid Glass v2026 */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05), 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 1.5rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.liquid-glass-ribbon {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.03);
+}
+
+.text-gold-premium {
+  color: #EAB308;
+  text-shadow: 0 0 8px rgba(234, 179, 8, 0.3);
+}
+
+.nav-underglow-active {
+  position: relative;
+  color: #EAB308 !important;
+}
+
+/* Synchronized Liquid Glass v2026 */
+.obsidian-glass {
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.liquid-glass-pill {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid #D4AF37;
+  border-radius: 30px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.font-royal {
+  font-family: var(--font-playfair), serif;
+  font-weight: 700;
+}
+
+@keyframes liquid-ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.liquid-ripple-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-ripple-effect::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+  background: rgba(212, 175, 55, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+}
+
+.liquid-ripple-effect:active::after {
+  animation: liquid-ripple 0.6s ease-out;
+}
+
+@keyframes gold-halo-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+  70% { box-shadow: 0 0 0 20px rgba(212, 175, 55, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+}
+
+.pop-and-glow-header {
+  animation: gold-halo-pulse 2s infinite;
 }
 
 .galaxy-gallery {
@@ -135,3 +301,48 @@ body {
 .animate-ken-burns {
   animation: ken-burns 20s ease-in-out infinite;
 }
+
+/* Cinematic Utilities */
+.scroll-snap-container {
+  scroll-snap-type: y mandatory;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+.scroll-snap-section {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.cinematic-glow {
+  box-shadow: 0 0 50px rgba(212, 175, 55, 0.1), inset 0 0 20px rgba(255, 255, 255, 0.02);
+}
+
+.glass-reflection {
+  position: relative;
+}
+
+.glass-reflection::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.05),
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: 0.75s;
+}
+
+.glass-reflection:hover::after {
+  left: 150%;
+}
+
+/* Scrollbar Hiding */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

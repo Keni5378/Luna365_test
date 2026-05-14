@@ -1,17 +1,18 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import Image from "next/image";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function Template({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const containerRef = useRef<HTMLDivElement>(null);
-  
-  // Parallax logic: background moves at 0.1x scroll speed
-  const { scrollY } = useScroll();
-  const backgroundY = useTransform(scrollY, [0, 2000], [0, 200]);
+  const bgRef = useRef<HTMLDivElement>(null);
 
   // Do not apply the voyage transition to the landing page
   if (pathname === "/") {
@@ -19,14 +20,14 @@ export default function Template({ children }: { children: React.ReactNode }) {
   }
 
   const getBackgroundImage = (path: string) => {
-    if (path.includes('about')) return '/backgrounds/about.png';
-    if (path.includes('menu')) return '/backgrounds/menu.png';
-    if (path.includes('bar')) return '/backgrounds/bar.png';
-    if (path.includes('gallery')) return '/backgrounds/gallery.png';
-    if (path.includes('buzz')) return '/backgrounds/buzz.png';
-    if (path.includes('location')) return '/backgrounds/location.png';
-    if (path.includes('reserve')) return '/backgrounds/reserve.png';
-    return '/backgrounds/location.png';
+    if (path.includes('about')) return '/backgrounds/about.jpg';
+    if (path.includes('menu')) return '/backgrounds/menu.jpg';
+    if (path.includes('bar')) return '/backgrounds/bar.jpg';
+    if (path.includes('gallery')) return '/backgrounds/gallery.jpg';
+    if (path.includes('buzz')) return '/backgrounds/buzz.jpg';
+    if (path.includes('location')) return '/backgrounds/location.jpg';
+    if (path.includes('reserve')) return '/backgrounds/reserve.jpg';
+    return '/backgrounds/location.jpg';
   };
 
   const getPageTitle = (path: string) => {
@@ -45,52 +46,113 @@ export default function Template({ children }: { children: React.ReactNode }) {
   const isLocation = pathname.includes('location');
 
   return (
+    <TemplateInner
+      key={pathname}
+      bgImage={bgImage}
+      pageId={pageId}
+      pageTitle={getPageTitle(pathname)}
+      isLocation={isLocation}
+      pathname={pathname}
+      containerRef={containerRef}
+      bgRef={bgRef}
+    >
+      {children}
+    </TemplateInner>
+  );
+}
+
+/* ─── Inner component that uses hooks safely ─── */
+function TemplateInner({
+  bgImage,
+  pageId,
+  pageTitle,
+  isLocation,
+  pathname,
+  containerRef,
+  bgRef,
+  children,
+}: {
+  bgImage: string;
+  pageId: string;
+  pageTitle: string;
+  isLocation: boolean;
+  pathname: string;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  bgRef: React.RefObject<HTMLDivElement | null>;
+  children: React.ReactNode;
+}) {
+  // GSAP-powered parallax: 0.15 speed, 1.2s scrub for cinematic drift
+  useEffect(() => {
+    const bgEl = bgRef.current;
+    if (!bgEl) return;
+
+    // Reset transform before applying ScrollTrigger
+    gsap.set(bgEl, { y: 0, scale: 1.1 });
+
+    const tween = gsap.to(bgEl, {
+      y: () => window.innerHeight * 0.15,
+      ease: "none",
+      scrollTrigger: {
+        trigger: document.documentElement,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1.2,
+        invalidateOnRefresh: true,
+      },
+    });
+
+    return () => {
+      tween.scrollTrigger?.kill();
+      tween.kill();
+      ScrollTrigger.getAll().forEach((st) => st.kill());
+    };
+  }, [bgRef]);
+
+  return (
     <div id={`${pageId}-page`} className="w-full min-h-screen relative z-0 overflow-x-hidden bg-black" ref={containerRef}>
-      {/* High-Resolution Galaxy Background with Responsive Scaling and Parallax */}
+      {/* High-Performance Galaxy Background with GSAP Parallax */}
       <div className="fixed inset-0 w-full h-screen -z-20 pointer-events-none overflow-hidden">
-        <motion.div 
+        <motion.div
           key={pathname}
-          initial={{ scale: 1.3, opacity: 0 }}
-          animate={{ scale: 1.15, opacity: 0.6 }}
-          style={{ 
-            y: backgroundY,
-          }}
-          transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }} 
-          className="absolute inset-0 w-full h-[140%] -top-[20%] flex items-center justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.65 }}
+          transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
+          className="absolute inset-0 w-full h-full"
         >
-          <motion.div
-            animate={{ 
-              x: ["-0.5%", "0.5%", "-0.5%"],
-              y: ["-0.5%", "0.5%", "-0.5%"],
-              rotate: [0, 0.2, 0]
+          <div
+            ref={bgRef}
+            className="absolute w-full h-full"
+            style={{
+              top: "-5%",
+              left: "-5%",
+              width: "110%",
+              height: "120%",
+              transform: "scale(1.1)",
+              willChange: "transform",
             }}
-            transition={{ 
-              duration: 40, 
-              repeat: Infinity, 
-              ease: "linear" 
-            }}
-            className="relative w-full h-full min-w-[110vw]"
           >
-            <Image 
-              src={bgImage} 
-              alt="Celestial Background" 
-              fill 
+            <Image
+              src={bgImage}
+              alt="Celestial Background"
+              fill
               priority
               className="object-cover object-center"
-              sizes="(max-width: 768px) 100vw, 1920px"
+              sizes="110vw"
+              quality={90}
             />
-          </motion.div>
-          {/* Dark Overlay for legibility - 40% Radial for Location as requested */}
+          </div>
+
+          {/* Dark Overlay for legibility */}
           {isLocation ? (
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.4)_0%,rgba(0,0,0,0.8)_100%)]" />
           ) : (
-            <div className="absolute inset-0 bg-black/30" />
+            <div className="absolute inset-0 bg-black/25" />
           )}
         </motion.div>
       </div>
       
       <div className="w-full min-h-screen pt-32 pb-24 px-4 sm:px-8 max-w-6xl mx-auto flex flex-col items-center">
-        {/* Space Voyage Header Fly-Forward (Responsive Scaling) */}
+        {/* Space Voyage Header Fly-Forward */}
         <motion.div
           initial={{ scale: 0, opacity: 0, z: -1000 }}
           animate={{ scale: 1, opacity: 1, z: 0 }}
@@ -127,7 +189,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
             transition={{ duration: 1, delay: 0.8, ease: "easeOut" }}
             className="text-3xl md:text-6xl font-serif mt-4 text-white uppercase tracking-wider px-4"
           >
-            {getPageTitle(pathname)}
+            {pageTitle}
           </motion.h1>
           
           <motion.div 
@@ -151,6 +213,65 @@ export default function Template({ children }: { children: React.ReactNode }) {
         >
           {children}
         </motion.div>
+
+        {/* ─── Global Royal Footer ─── */}
+        <footer className="w-full mt-24 relative z-10">
+          <div
+            style={{
+              background: "rgba(0,0,0,0.20)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              borderRadius: "30px",
+              borderTop: "2px solid #D4AF37",
+              border: "1px solid rgba(212,175,55,0.3)",
+              boxShadow: "0 4px 30px rgba(0,0,0,0.5)",
+            }}
+          >
+            <div className="px-8 py-10 md:px-12 md:py-14">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+                {/* Address */}
+                <div>
+                  <h4 className="text-xs uppercase tracking-[0.3em] font-bold mb-3" style={{ color: "#D4AF37" }}>
+                    📍 Address
+                  </h4>
+                  <p className="text-white text-sm leading-relaxed">
+                    Luna 365, NRI Layout,<br />
+                    Bangalore - 560016
+                  </p>
+                </div>
+                {/* Contact */}
+                <div>
+                  <h4 className="text-xs uppercase tracking-[0.3em] font-bold mb-3" style={{ color: "#D4AF37" }}>
+                    📞 Contact
+                  </h4>
+                  <p className="text-white text-sm leading-relaxed">
+                    +91 96209 01303
+                  </p>
+                  <p className="text-white text-sm leading-relaxed">
+                    ✉️ luna365@gmail.com
+                  </p>
+                </div>
+                {/* Hours */}
+                <div>
+                  <h4 className="text-xs uppercase tracking-[0.3em] font-bold mb-3" style={{ color: "#D4AF37" }}>
+                    🕐 Hours
+                  </h4>
+                  <p className="text-white text-sm leading-relaxed">
+                    Open Daily<br />
+                    12:00 PM – 12:00 AM
+                  </p>
+                </div>
+              </div>
+
+              {/* Bottom line */}
+              <div className="mt-10 pt-6 text-center" style={{ borderTop: "1px solid rgba(212,175,55,0.15)" }}>
+                <p className="text-white/40 text-[10px] uppercase tracking-[0.3em]">
+                  © 2025 Luna 365 Bar and Kitchen. All rights reserved.
+                </p>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );

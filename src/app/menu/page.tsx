@@ -1,160 +1,339 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Reveal } from "@/components/Reveal";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { MENU_CATEGORIES, type MenuCategory, type MenuItem } from "@/data/menuData";
 
-interface BentoCardProps {
-  title: string;
-  price?: string;
-  description?: string;
-  image?: string;
-  span?: string;
-  featured?: boolean;
+/* ─── Category Tab Bar ─── */
+function CategoryTabs({
+  categories,
+  activeId,
+  onSelect,
+}: {
+  categories: MenuCategory[];
+  activeId: string;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <div className="sticky top-24 z-40 flex justify-center px-4 mb-16">
+      <motion.nav
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="w-full max-w-4xl flex items-center justify-center p-2"
+        style={{
+          background: "rgba(0,0,0,0.20)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderRadius: "30px",
+          border: "1px solid rgba(212,175,55,0.25)",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+        }}
+      >
+        <div className="flex items-center justify-center gap-1 md:gap-2 w-full overflow-x-auto no-scrollbar px-1">
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => onSelect(cat.id)}
+              className="relative flex items-center px-4 md:px-6 py-3 rounded-full transition-all duration-500 whitespace-nowrap group"
+              style={{
+                color: activeId === cat.id ? "#D4AF37" : "rgba(255,255,255,0.4)",
+                background: activeId === cat.id ? "rgba(255,255,255,0.05)" : "transparent",
+              }}
+            >
+              <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.15em]">
+                {cat.label}
+              </span>
+              {activeId === cat.id && (
+                <motion.div
+                  layoutId="menu-active-pill"
+                  className="absolute inset-0 rounded-full"
+                  style={{ border: "1px solid rgba(212,175,55,0.35)" }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+            </button>
+          ))}
+        </div>
+      </motion.nav>
+    </div>
+  );
 }
 
-function BentoCard({ title, price, description, image, span, featured }: BentoCardProps) {
+/* ─── Pop-and-Glow Section Header ─── */
+function PopGlowHeader({ title, description }: { title: string; description: string }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.8, ease: [0.19, 1, 0.22, 1] }}
-      className={`bento-card rounded-[2.5rem] p-8 overflow-hidden relative group ${span || ""}`}
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 260, damping: 20 }}
+      className="text-center mb-12 relative"
     >
-      {image && (
+      <h2 className="text-3xl md:text-5xl font-serif relative inline-block" style={{ color: "#D4AF37" }}>
+        {title}
+        <motion.div
+          animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.15, 1] }}
+          transition={{ duration: 3, repeat: Infinity }}
+          className="absolute -inset-8 rounded-full z-[-1]"
+          style={{ background: "rgba(212,175,55,0.1)", filter: "blur(40px)" }}
+        />
+      </h2>
+      <div className="h-px w-32 gold-gradient-bg mx-auto mt-6 rounded-full opacity-50" />
+      <p className="mt-6 text-gray-400 max-w-2xl mx-auto text-sm md:text-base italic leading-relaxed">
+        {description}
+      </p>
+    </motion.div>
+  );
+}
+
+/* ─── Hero Spotlight Card ─── */
+function HeroSpotlight({ category }: { category: MenuCategory }) {
+  const featuredItem = category.items.find((i) => i.image && i.featured) || category.items.find((i) => i.featured);
+  if (!featuredItem) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: 0.2, ease: [0.19, 1, 0.22, 1] }}
+      className="relative w-full h-[320px] md:h-[420px] rounded-[30px] overflow-hidden mb-16 group"
+      style={{ border: "1px solid #D4AF37" }}
+    >
+      <Image
+        src={category.heroImage}
+        alt={category.heroTitle}
+        fill
+        className="object-cover opacity-50 group-hover:opacity-70 transition-all duration-1000 group-hover:scale-105"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 p-8 md:p-14">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div className="space-y-2">
+            <span
+              className="text-[9px] uppercase tracking-[0.4em] font-bold block"
+              style={{ color: "#D4AF37" }}
+            >
+              Featured Selection
+            </span>
+            <h3 className="text-2xl md:text-4xl font-serif text-white">{featuredItem.name}</h3>
+            {featuredItem.notes && (
+              <p className="text-white/60 text-sm italic">{featuredItem.notes}</p>
+            )}
+          </div>
+          <span className="text-3xl md:text-4xl font-serif" style={{ color: "#D4AF37" }}>
+            {featuredItem.price}
+          </span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Single Bento Card ─── */
+function BentoCard({ item, index }: { item: MenuItem; index: number }) {
+  const hasImage = !!item.image;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{
+        duration: 0.5,
+        delay: Math.min(index * 0.04, 0.6),
+        ease: [0.19, 1, 0.22, 1],
+      }}
+      className={`relative overflow-hidden group ${hasImage ? "md:col-span-2 md:row-span-2" : ""}`}
+      style={{
+        background: "rgba(0,0,0,0.25)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderRadius: "30px",
+        border: "1px solid #D4AF37",
+        boxShadow: "0 4px 30px rgba(0,0,0,0.5)",
+        minHeight: hasImage ? "300px" : "auto",
+        transition: "all 0.4s cubic-bezier(0.19, 1, 0.22, 1)",
+      }}
+      whileHover={{ y: -5, scale: 1.02 }}
+    >
+      {/* Gold pulse on appear */}
+      <motion.div
+        initial={{ opacity: 0.6, scale: 0.8 }}
+        animate={{ opacity: 0, scale: 2 }}
+        transition={{ duration: 0.8, delay: Math.min(index * 0.04, 0.6) }}
+        className="absolute inset-0 rounded-[30px] pointer-events-none z-0"
+        style={{ border: "2px solid rgba(212,175,55,0.4)" }}
+      />
+
+      {hasImage && (
         <div className="absolute inset-0 z-0">
-          <Image 
-            src={image} 
-            alt={title} 
-            fill 
-            className="object-cover opacity-30 group-hover:opacity-50 transition-opacity duration-700 group-hover:scale-110 transition-transform duration-1000"
+          <Image
+            src={item.image!}
+            alt={item.name}
+            fill
+            className="object-cover opacity-30 group-hover:opacity-50 group-hover:scale-110"
+            style={{ transition: "all 0.7s ease" }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
         </div>
       )}
-      
-      <div className="relative z-10 flex flex-col h-full justify-end">
-        <div className="flex justify-between items-start mb-3">
-          <h3 className="text-2xl font-serif text-white group-hover:text-[#D4AF37] transition-colors duration-300">
-            {title}
-            {featured && (
-              <span className="ml-3 text-[10px] uppercase tracking-widest bg-[#D4AF37] text-black px-2 py-0.5 rounded font-bold whitespace-nowrap">
-                Signature
-              </span>
-            )}
-          </h3>
-          {price && <span className="text-xl font-serif text-[#D4AF37]">{price}</span>}
+
+      <div className={`relative z-10 flex flex-col h-full justify-end ${hasImage ? "p-8" : "p-6"}`}>
+        <div className="flex justify-between items-start mb-2 gap-3">
+          <div className="flex-1">
+            <h3
+              className="text-base md:text-lg font-serif text-white group-hover:text-[#D4AF37] transition-colors duration-300 leading-tight"
+            >
+              {item.name}
+              {item.featured && (
+                <span
+                  className="ml-2 text-[8px] uppercase tracking-widest px-2 py-0.5 rounded font-bold whitespace-nowrap align-middle"
+                  style={{ background: "#D4AF37", color: "#000" }}
+                >
+                  Signature
+                </span>
+              )}
+            </h3>
+          </div>
+          <span className="text-lg font-serif shrink-0" style={{ color: "#D4AF37" }}>
+            {item.price}
+          </span>
         </div>
-        {description && (
-          <p className="text-gray-400 text-sm leading-relaxed max-w-xs group-hover:text-white transition-colors duration-300">
-            {description}
-          </p>
+        {item.notes && (
+          <p className="text-white/70 text-xs leading-relaxed mt-1">{item.notes}</p>
         )}
       </div>
     </motion.div>
   );
 }
 
-function PopGlowHeader({ title }: { title: string }) {
+/* ─── Sub-Category Grid ─── */
+function SubCategorySection({ subCategory, items, startIndex }: { subCategory: string; items: MenuItem[]; startIndex: number }) {
+  return (
+    <div className="space-y-8">
+      <div className="flex items-center gap-6">
+        <h3
+          className="text-lg md:text-xl font-serif tracking-widest whitespace-nowrap"
+          style={{ color: "#D4AF37" }}
+        >
+          {subCategory}
+        </h3>
+        <div className="flex-1 h-[1px] bg-white/10" />
+        <div className="w-2 h-2 rounded-full" style={{ background: "rgba(212,175,55,0.4)" }} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-auto">
+        {items.map((item, idx) => (
+          <BentoCard key={`${item.name}-${idx}`} item={item} index={startIndex + idx} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Heritage Footer ─── */
+function HeritageFooter() {
   return (
     <motion.div
-      initial={{ scale: 0, opacity: 0 }}
-      whileInView={{ scale: 1, opacity: 1 }}
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ type: "spring", stiffness: 260, damping: 20 }}
-      className="text-center mb-16 relative"
+      transition={{ duration: 0.8 }}
+      className="relative mt-24 overflow-hidden"
+      style={{
+        borderRadius: "30px",
+        border: "1px solid rgba(212,175,55,0.2)",
+      }}
     >
-      <h2 className="text-3xl md:text-5xl font-serif text-[#D4AF37] relative inline-block">
-        {title}
-        <motion.div 
-          animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
-          transition={{ duration: 3, repeat: Infinity }}
-          className="absolute -inset-8 bg-[#D4AF37]/10 blur-3xl rounded-full z-[-1]"
-        />
-      </h2>
-      <div className="h-px w-32 gold-gradient-bg mx-auto mt-6 rounded-full opacity-50" />
+      <div className="absolute inset-0 bg-[#0a0a0a] z-0" />
+      <div
+        className="absolute inset-0 z-[1] opacity-30 mix-blend-overlay"
+        style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/parchment.png')", background: "rgba(212,175,55,0.05)" }}
+      />
+      <div className="relative z-10 p-12 md:p-24 text-center max-w-4xl mx-auto">
+        <h2 className="text-3xl md:text-5xl font-serif mb-8" style={{ color: "#D4AF37" }}>
+          Nostalgic Palates
+        </h2>
+        <div className="h-px w-24 gold-gradient-bg mx-auto mb-10 opacity-60" />
+        <p className="text-gray-300 text-lg md:text-xl leading-relaxed mb-8 italic">
+          &quot;Bridging the rich traditions of Sindh since 1947 with the modern vibrancy of Bangalore.&quot;
+        </p>
+        <p className="text-gray-400 leading-relaxed mb-12">
+          Since 1947, our family has preserved the culinary secrets of undivided India. Luna 365
+          proudly carries this legacy forward, merging the rustic soul of the Tandoor with the
+          sophistication of contemporary fine dining. Every spice blend, every slow-cooked lentil,
+          and every signature kebab is a testament to our heritage—a journey from the banks of
+          the Indus to the heart of NRI Layout.
+        </p>
+        <div
+          className="inline-block px-8 py-3 rounded-full uppercase tracking-[0.3em] text-xs"
+          style={{ border: "1px solid rgba(212,175,55,0.3)", color: "#D4AF37" }}
+        >
+          Est. 2019
+        </div>
+      </div>
     </motion.div>
   );
 }
 
+/* ─── Main Page ─── */
 export default function MenuPage() {
-  const categories = [
-    {
-      title: "The Appetisers",
-      items: [
-        { title: "The Paneer Craft", price: "₹250", description: "Paneer Sikanji: Cottage cheese in fennel-flavoured sauce of cashew, yogurt, and khoya.", image: "/menu/paneer_sikanji.png", span: "md:col-span-2 md:row-span-2", featured: true },
-        { title: "Peshawari Paneer Tikka", price: "₹250", description: "Creamy malai paneer coated with fennel-flavoured yogurt.", featured: true },
-        { title: "Vegetarian Platter", price: "₹500", description: "Selection of Shikanji paneer, Soya Chaap, Makai Seekh, and Tandoori Salad.", span: "md:col-span-2", featured: true },
-        { title: "The Tandoor Artistry", price: "₹250", description: "Grilled Sabuta Chooza: Whole spring chicken baked in Indian spices.", image: "/menu/sabuta_chooza.png", span: "md:col-span-2 md:row-span-2", featured: true },
-        { title: "Karare Dhaniya Ka Paneer", price: "₹250", description: "Malai paneer stuffed with spinach & cheese, fried in fresh coriander." },
-        { title: "Sunehri Soya Chaap", price: "₹150", description: "Juicy soya batons baked in chef's spices." },
-        { title: "Subz Makai Seekh", price: "₹190", description: "Vegetarian seekh kebab with corn and spinach." },
-      ]
+  const [activeId, setActiveId] = useState(MENU_CATEGORIES[0].id);
+  const activeCategory = MENU_CATEGORIES.find((c) => c.id === activeId)!;
+
+  // Group items by subCategory
+  const grouped = activeCategory.items.reduce(
+    (acc, item) => {
+      const key = item.subCategory || "Other";
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(item);
+      return acc;
     },
-    {
-      title: "The Main Course",
-      items: [
-        { title: "Dal Afghani", price: "₹225", description: "Black lentils cooked overnight with spices and desi butter.", span: "md:col-span-2", featured: true },
-        { title: "Murgh Peshawari", price: "₹325", description: "Tender chicken cuts in traditional Peshawari gravy.", span: "md:col-span-2", featured: true },
-        { title: "Patiala Tikka Masala", price: "₹250", description: "Cottage cheese cubes grilled and cooked in spicy masala." },
-        { title: "Murgh Khasam Khaas", price: "₹300", description: "Tandoor grilled chicken in butter and cream." },
-        { title: "Diwani Handi", price: "₹200", description: "Baby vegetables and spinach in a tangy tomato-based masala." },
-        { title: "Lahori Gosht", price: "₹450", description: "Lamb cubes simmered in a thick, aromatic gravy.", featured: true },
-      ]
-    },
-    {
-      title: "Sweet Orbits",
-      items: [
-        { title: "Gulab Jamun Rabri Brulee", price: "₹150", description: "Jamuns in saffron rabdi, torched golden.", image: "/menu/dessert_orbit.png", span: "md:col-span-2 md:row-span-2", featured: true },
-        { title: "Moong Dal Halwa", price: "₹150", description: "Saffron-infused gram pudding." },
-        { title: "Phirni", price: "₹100", description: "Basmati rice milk with saffron and cardamom." },
-      ]
-    }
-  ];
+    {} as Record<string, MenuItem[]>
+  );
+
+  let runningIndex = 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-12">
-      <div className="space-y-32">
-        {categories.map((category, catIdx) => (
-          <section key={catIdx}>
-            <PopGlowHeader title={category.title} />
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-fr">
-              {category.items.map((item, itemIdx) => (
-                <BentoCard key={itemIdx} {...item} />
-              ))}
-            </div>
-          </section>
-        ))}
+    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
+      {/* Tab Navigation */}
+      <CategoryTabs categories={MENU_CATEGORIES} activeId={activeId} onSelect={setActiveId} />
 
-        {/* Heritage Footer */}
-        <Reveal>
-          <div className="relative mt-32 rounded-[3rem] overflow-hidden border border-[#D4AF37]/20 group">
-            {/* Faint gold parchment texture overlay */}
-            <div className="absolute inset-0 bg-[#0a0a0a] z-0" />
-            <div className="absolute inset-0 bg-[#D4AF37]/5 mix-blend-overlay opacity-30 z-1" 
-                 style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/parchment.png')" }} />
-            
-            <div className="relative z-10 p-12 md:p-24 text-center max-w-4xl mx-auto">
-              <h2 className="text-3xl md:text-5xl font-serif text-[#D4AF37] mb-8">Nostalgic Palates</h2>
-              <div className="h-px w-24 gold-gradient-bg mx-auto mb-10 opacity-60" />
-              <p className="text-gray-300 text-lg md:text-xl leading-relaxed mb-8 italic">
-                &quot;Bridging the rich traditions of Sindh since 1947 with the modern vibrancy of Bangalore.&quot;
-              </p>
-              <p className="text-gray-400 leading-relaxed mb-12">
-                Since 1947, our family has preserved the culinary secrets of undivided India. Luna 365 
-                proudly carries this legacy forward, merging the rustic soul of the Tandoor with the 
-                sophistication of contemporary fine dining. Every spice blend, every slow-cooked lentil, 
-                and every signature kebab is a testament to our heritage—a journey from the banks of 
-                the Indus to the heart of NRI Layout.
-              </p>
-              <div className="inline-block px-8 py-3 rounded-full border border-[#D4AF37]/30 text-[#D4AF37] uppercase tracking-[0.3em] text-xs">
-                Est. 2019
-              </div>
-            </div>
+      {/* Animated Content Area */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeId}
+          initial={{ opacity: 0, scale: 0.97, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 1.02, y: -20 }}
+          transition={{ duration: 0.6, ease: [0.19, 1, 0.22, 1] }}
+        >
+          {/* Section Header */}
+          <PopGlowHeader title={activeCategory.heroTitle} description={activeCategory.heroDescription} />
+
+          {/* Hero Spotlight */}
+          <HeroSpotlight category={activeCategory} />
+
+          {/* SubCategory Grids */}
+          <div className="space-y-20">
+            {Object.entries(grouped).map(([subCat, items]) => {
+              const startIdx = runningIndex;
+              runningIndex += items.length;
+              return (
+                <SubCategorySection
+                  key={subCat}
+                  subCategory={subCat}
+                  items={items}
+                  startIndex={startIdx}
+                />
+              );
+            })}
           </div>
-        </Reveal>
-      </div>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Heritage Footer */}
+      <HeritageFooter />
     </div>
   );
 }
