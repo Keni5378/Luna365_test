@@ -6,6 +6,7 @@ import { useRef, useEffect } from "react";
 import Image from "next/image";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { GlobalFooter } from "@/components/GlobalFooter";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -14,8 +15,8 @@ export default function Template({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
 
-  // Do not apply the voyage transition to the landing page
-  if (pathname === "/") {
+  // Do not apply the voyage transition to the landing page or admin dashboard
+  if (pathname === "/" || pathname.startsWith("/admin")) {
     return <>{children}</>;
   }
 
@@ -27,6 +28,10 @@ export default function Template({ children }: { children: React.ReactNode }) {
     if (path.includes('buzz')) return '/backgrounds/buzz.jpg';
     if (path.includes('location')) return '/backgrounds/location.jpg';
     if (path.includes('reserve')) return '/backgrounds/reserve.jpg';
+    if (path.includes('privacy-policy')) return '/backgrounds/about.jpg';
+    if (path.includes('terms-of-service')) return '/backgrounds/location.jpg';
+    if (path.includes('cookie-policy')) return '/backgrounds/reserve.jpg';
+    if (path.includes('admin')) return '/backgrounds/location.jpg';
     return '/backgrounds/location.jpg';
   };
 
@@ -38,6 +43,10 @@ export default function Template({ children }: { children: React.ReactNode }) {
     if (path.includes('buzz')) return 'THE BUZZ';
     if (path.includes('location')) return 'LOCATION';
     if (path.includes('reserve')) return 'RESERVE';
+    if (path.includes('privacy-policy')) return 'PRIVACY POLICY';
+    if (path.includes('terms-of-service')) return 'TERMS OF SERVICE';
+    if (path.includes('cookie-policy')) return 'COOKIE POLICY';
+    if (path.includes('admin')) return 'COMMAND CENTER';
     return '';
   };
 
@@ -151,7 +160,7 @@ function TemplateInner({
         </motion.div>
       </div>
       
-      <div className="w-full min-h-screen pt-32 pb-24 px-4 sm:px-8 max-w-6xl mx-auto flex flex-col items-center">
+      <div className="w-full min-h-screen pt-32 pb-0 px-4 sm:px-8 max-w-6xl mx-auto flex flex-col items-center">
         {/* Space Voyage Header Fly-Forward */}
         <motion.div
           initial={{ scale: 0, opacity: 0, z: -1000 }}
@@ -169,7 +178,7 @@ function TemplateInner({
             >
               LUNA 365
             </motion.h2>
-            
+
             {/* Solar Flare Effect */}
             <motion.div
               initial={{ opacity: 0, scale: 0.5, filter: "blur(10px)" }}
@@ -182,7 +191,7 @@ function TemplateInner({
               className="absolute inset-0 bg-[#D4AF37] rounded-full z-[-1]"
             />
           </div>
-          
+
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -191,7 +200,7 @@ function TemplateInner({
           >
             {pageTitle}
           </motion.h1>
-          
+
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: "6rem" }}
@@ -213,66 +222,10 @@ function TemplateInner({
         >
           {children}
         </motion.div>
-
-        {/* ─── Global Royal Footer ─── */}
-        <footer className="w-full mt-24 relative z-10">
-          <div
-            style={{
-              background: "rgba(0,0,0,0.20)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              borderRadius: "30px",
-              borderTop: "2px solid #D4AF37",
-              border: "1px solid rgba(212,175,55,0.3)",
-              boxShadow: "0 4px 30px rgba(0,0,0,0.5)",
-            }}
-          >
-            <div className="px-8 py-10 md:px-12 md:py-14">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
-                {/* Address */}
-                <div>
-                  <h4 className="text-xs uppercase tracking-[0.3em] font-bold mb-3" style={{ color: "#D4AF37" }}>
-                    📍 Address
-                  </h4>
-                  <p className="text-white text-sm leading-relaxed">
-                    Luna 365, NRI Layout,<br />
-                    Bangalore - 560016
-                  </p>
-                </div>
-                {/* Contact */}
-                <div>
-                  <h4 className="text-xs uppercase tracking-[0.3em] font-bold mb-3" style={{ color: "#D4AF37" }}>
-                    📞 Contact
-                  </h4>
-                  <p className="text-white text-sm leading-relaxed">
-                    +91 96209 01303
-                  </p>
-                  <p className="text-white text-sm leading-relaxed">
-                    ✉️ luna365@gmail.com
-                  </p>
-                </div>
-                {/* Hours */}
-                <div>
-                  <h4 className="text-xs uppercase tracking-[0.3em] font-bold mb-3" style={{ color: "#D4AF37" }}>
-                    🕐 Hours
-                  </h4>
-                  <p className="text-white text-sm leading-relaxed">
-                    Open Daily<br />
-                    12:00 PM – 12:00 AM
-                  </p>
-                </div>
-              </div>
-
-              {/* Bottom line */}
-              <div className="mt-10 pt-6 text-center" style={{ borderTop: "1px solid rgba(212,175,55,0.15)" }}>
-                <p className="text-white/40 text-[10px] uppercase tracking-[0.3em]">
-                  © 2025 Luna 365 Bar and Kitchen. All rights reserved.
-                </p>
-              </div>
-            </div>
-          </div>
-        </footer>
       </div>
+
+      {/* ─── Global 4-Column Premium Footer ─── */}
+      <GlobalFooter />
     </div>
   );
 }

@@ -207,7 +207,7 @@ function ReviewCard({ review, index }: { review: typeof REVIEWS[0]; index: numbe
 function StatsBanner() {
   const stats = [
     { value: "4.5", label: "Google Rating" },
-    { value: "1200+", label: "Reviews" },
+    { value: "900+", label: "Reviews", gradient: true },
     { value: "98%", label: "Recommend" },
   ];
 
@@ -217,16 +217,43 @@ function StatsBanner() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.8 }}
-      className="flex flex-wrap justify-center gap-6 md:gap-12 mb-20"
+      className="mb-20"
+      style={{
+        background: "rgba(0,0,0,0.20)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderRadius: "30px",
+        border: "1px solid rgba(212,175,55,0.2)",
+        boxShadow: "0 4px 30px rgba(0,0,0,0.5)",
+      }}
     >
-      {stats.map((stat) => (
-        <div key={stat.label} className="text-center">
-          <div className="text-3xl md:text-4xl font-serif" style={{ color: "#D4AF37" }}>
-            {stat.value}
+      <div className="flex flex-wrap justify-center gap-6 md:gap-12 px-6 py-8 md:py-10">
+        {stats.map((stat) => (
+          <div key={stat.label} className="text-center">
+            {stat.gradient ? (
+              <div
+                className="text-3xl md:text-4xl"
+                style={{
+                  fontFamily: "var(--font-playfair), serif",
+                  fontWeight: 300,
+                  letterSpacing: "0.1em",
+                  background: "linear-gradient(to bottom, #FFFFFF 0%, #D4AF37 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
+                {stat.value}
+              </div>
+            ) : (
+              <div className="text-3xl md:text-4xl font-serif" style={{ color: "#D4AF37" }}>
+                {stat.value}
+              </div>
+            )}
+            <div className="text-[10px] uppercase tracking-[0.3em] text-white/40 mt-1">{stat.label}</div>
           </div>
-          <div className="text-[10px] uppercase tracking-[0.3em] text-white/40 mt-1">{stat.label}</div>
-        </div>
-      ))}
+        ))}
+      </div>
     </motion.div>
   );
 }
